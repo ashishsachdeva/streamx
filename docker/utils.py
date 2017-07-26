@@ -38,10 +38,15 @@ def override_connect_configs(confs):
     k = k[8:]
     key = k.lower().replace("_",".") + "="
       
+    key_present_in_file=False
     # override connect_conf with env_vars
     for i in range(0, len(connect_conf)):
       if connect_conf[i].startswith(key):
+        key_present_in_file=True
         connect_conf[i] = key + v
+
+    if not key_present_in_file:
+        connect_conf.append(key + v)
 
   with open(connect_override_file,'w') as f:
     for line in connect_conf:
