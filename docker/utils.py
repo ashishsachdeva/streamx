@@ -52,6 +52,15 @@ def override_connect_configs(confs):
     for line in connect_conf:
       f.write(line+"\n")
 
+def append_etc_hosts(hosts):
+  if hosts.has_key('CONNECT_ADD_HOST'):
+    entries = hosts['CONNECT_ADD_HOST']
+    for entry in entries.split(';'):
+      all_dns,ip = entry.split(':')
+      for dns in all_dns.split(','):
+        with open("/etc/hosts",'a+') as f:
+          f.write(ip + " " + dns + "\n")
+
 def override_hadoop_configs(confs):
   hadoop_conf_file = "/usr/local/streamx/config/hadoop-conf/hdfs-site.xml"
   cluster_on_roles = confs["CONNECT_CLUSTER_ON_ROLES"]
@@ -70,16 +79,22 @@ def override_hadoop_configs(confs):
 
 def main():
   confs = {}
+  hosts = {}
   for x in range(1,len(sys.argv)):
     if sys.argv[x].startswith("CONNECT"):
       (k, v) = sys.argv[x].split("=", 1)
       confs[k] = v
     else:
-      print "Ignoring " + x + " as it does not start with CONNECT_"
+      print "Ignoring " + argv[x] + " as it does not start with CONNECT_"
+
+    if "ADD_HOST" in sys.argv[x]:
+      (k, v) = sys.argv[x].split("=", 1)
+      hosts[k] = v
 
   check_for_required_configs(confs)
   override_connect_configs(confs)
   override_hadoop_configs(confs)
+  append_etc_hosts(hosts)
 
 if __name__ == "__main__":
   main()
